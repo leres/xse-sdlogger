@@ -1,4 +1,4 @@
-# @(#) $Id: Makefile 163 2025-03-26 19:46:31Z leres $ (XSE)
+# @(#) $Id: Makefile 164 2025-03-26 19:50:13Z leres $ (XSE)
 
 TARGET=		sdlogger
 ARDUINO_BOARD=	atmega1284
@@ -74,12 +74,10 @@ CLEANFILES+=	.depend
 CLEANFILES+=	version.h
 .endif
 
+.if exists(${.CURDIR}/.svn)
 TOPVERSION=	${:!cat ${.CURDIR}/VERSION!}
-.if exists(${.CURDIR}/.svn)
 SVNVERSION=	${:!cd ${.CURDIR} && svnversion!}
-.endif
 
-.if exists(${.CURDIR}/.svn)
 hex: ${TARGET}.hex
 	@test ${SVNVERSION} = ${SVNVERSION:C/[M:]//} || \
 	    (echo ERROR: subversion checkout needs updating ; exit 2)
