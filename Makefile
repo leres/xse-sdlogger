@@ -1,4 +1,4 @@
-# @(#) $Id: Makefile 160 2025-03-24 23:32:11Z leres $ (XSE)
+# @(#) $Id: Makefile 163 2025-03-26 19:46:31Z leres $ (XSE)
 
 TARGET=		sdlogger
 ARDUINO_BOARD=	atmega1284
@@ -47,8 +47,10 @@ ARDUINO_CXXFLAGS+= -DUART0_SIZE=8192 -DIBUFSIZE=256
 
 NO_EXTRADEPEND=
 
-#version.h:
-#	@${.CURDIR}/version.sh ${.CURDIR}
+.if exists(${.CURDIR}/.svn)
+version.h:
+	@${.CURDIR}/version.sh ${.CURDIR}
+.endif
 
 # Always update version.h when necessary
 .BEGIN:
@@ -61,16 +63,23 @@ NO_EXTRADEPEND=
 .if empty(.TARGETS:Mclean) && empty(.TARGETS:Mcleandepend) && \
     empty(.TARGETS:Mdepend) && empty(.TARGETS:Mobj) && \
     empty(.TARGETS:Mobjlink)
-#	@${.CURDIR}/version.sh ${.CURDIR}
+.if exists(${.CURDIR}/.svn)
+	@${.CURDIR}/version.sh ${.CURDIR}
+.endif
 	@cd ${.CURDIR} && ${MAKE} depend
 .endif
 
 CLEANFILES+=	.depend
-#CLEANFILES+=	version.h
+.if exists(${.CURDIR}/.svn)
+CLEANFILES+=	version.h
+.endif
 
 TOPVERSION=	${:!cat ${.CURDIR}/VERSION!}
+.if exists(${.CURDIR}/.svn)
 SVNVERSION=	${:!cd ${.CURDIR} && svnversion!}
+.endif
 
+.if exists(${.CURDIR}/.svn)
 hex: ${TARGET}.hex
 	@test ${SVNVERSION} = ${SVNVERSION:C/[M:]//} || \
 	    (echo ERROR: subversion checkout needs updating ; exit 2)
@@ -78,6 +87,7 @@ hex: ${TARGET}.hex
 	chmod a-w,a+x ${.CURDIR}/archive/${TOPVERSION}.${SVNVERSION}.hex
 	cp -p ${TARGET}.elf ${.CURDIR}/archive/${TOPVERSION}.${SVNVERSION}.elf
 	chmod a-w,a+x ${.CURDIR}/archive/${TOPVERSION}.${SVNVERSION}.elf
+.endif
 
 force: /tmp
 
