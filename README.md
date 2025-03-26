@@ -2,6 +2,9 @@
 
 This is my re-implementation of the [seeed studio](https://www.seeedstudio.com/) SDLogger serial TTL logger (which itself is a seeed studio SDLogger of the  [SparkFun](https://www.sparkfun.com/) Openlog logger).
 
+[![](https://raw.githubusercontent.com/leres/xse-sdlogger/main/images/xse-sdlogger1-sm.jpg)](https://raw.githubusercontent.com/leres/xse-sdlogger/main/images/xse-sdlogger1.jpg)
+[![](https://raw.githubusercontent.com/leres/xse-sdlogger/main/images/xse-sdlogger2-sm.jpg)](https://raw.githubusercontent.com/leres/xse-sdlogger/main/images/xse-sdlogger2.jpg)
+
 ## Firmware Changes
 
 Here are some of the changes I made to the firmware:
