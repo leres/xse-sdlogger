@@ -29,7 +29,9 @@ Here are some of the changes I made to the firmware:
 
  - Used 8K (half) of the 16K of available SRAM for the receive buffer. OpenLog uses 512 and SDLogger uses 2000 bytes.
 
- - Added support for reading a Maxim DS3231 real-time clock chip via I2C. This allows file system timestamped log files and also encoding the date and time in the DOS 8.3 filename. By using the characters A-Z and 0-9 it's possible to encode 16 bits into 4 characters of base 36. So year, month, and day are stored in the first 4 characters and hours, minutes, and seconds are stored in the last 4 characters. For example, 0H0Z0W86.TXT decodes to January 19, 2023 at 7:25:26 pm (local time zone). Note that the FAT file system only allows for even seconds of resolution; there is literally no room to store the odd bit. 
+ - Added support for reading a Maxim DS3231 real-time clock chip via I2C. This allows file system timestamped log files and also encoding the date and time in the DOS 8.3 filename. By using the characters A-Z and 0-9 it's possible to encode 16 bits into 4 characters of base 36. So year, month, and day are stored in the first 4 characters and hours, minutes, and seconds are stored in the last 4 characters. For example, 0H0Z0W86.TXT decodes to January 19, 2023 at 7:25:26 pm (local time zone). Note that the FAT file system only allows for even seconds of resolution; there is literally no room to store the odd bit.
+  
+ - Added a script ([Renameclass2applog](https://raw.githubusercontent.com/leres/xse-sdlogger/refs/heads/main/scripts/Renameclass2applog?token=GHSAT0AAAAAAC3Y6XTUA3XQTTPEEFYEMJDEZ7ELW4Q)) to rename 8.3 files to a human readable format.
 
 ## Building
 
