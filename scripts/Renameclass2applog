@@ -1,0 +1,121 @@
+#!/usr/local/bin/python
+# @(#) $Id: Renameclass2applog 1507 2025-03-26 17:06:34Z leres $ (XSE)
+"""Rename xse-sdlogger base 36 time/date encoded serial log files"""
+
+import argparse
+import errno
+import os
+import re
+import sys
+
+OPTS = None
+PROG = '?'
+
+def process(ofn):
+    """Decode the base 36 dos 8.3 filename and return the long
+        version and an optional error message"""
+    dn, fn = os.path.split(ofn)
+    base, ext = os.path.splitext(fn)
+    if base.upper().startswith('LOG') or ext.upper() != '.TXT':
+        return None, f'{fn}: invalid filename'
+    m = re.match(r'([0-9A-Za-z]{4})([0-9A-Za-z]{4})', base)
+    if not m:
+        return None, f'{fn}: Not a base 36 filename'
+
+    # Convert to raw FAT date and time
+    vdate = int(m.group(1), 36)
+    year = 1980 + (vdate >> 9)
+    month = (vdate >> 5) & 0x0F
+    day = vdate & 0x1F
+    vtime = int(m.group(2), 36)
+    h = vtime >> 11
+    m = (vtime >> 5) & 0x3F
+    s = (vtime & 0x1F) << 1
+
+    # Format new name
+    base2 = (f'{int(year):04}-{int(month):02}-{int(day):02}'
+        f'-{int(h):02}:{int(m):02}:{int(s):02}{ext.lower()}')
+
+    fn2 = os.path.join(dn, base2)
+    return fn2, None
+
+def main(argv=None):
+    """Parse options, output config"""
+    global OPTS
+    global PROG
+
+    if not argv:
+        argv = sys.argv
+
+    PROG = os.path.basename(argv[0])
+    version = '$Revision: 1507 $'.strip('$').rstrip()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version=version)
+
+    parser.add_argument('-d', dest='debug', action='count', default=0,
+        help='turn on debugging')
+    parser.add_argument('-v', dest='verbose', action='count', default=0,
+        help='verbose output')
+    parser.add_argument('-n', dest='dryrun', action='store_true',
+        help="don't make any changes (dry run)")
+    parser.add_argument('-T', dest='updatetime', action='store_true',
+        help='update mtime')
+
+    parser.add_argument('--debugger', action='store_true',
+        help=argparse.SUPPRESS)
+
+    parser.add_argument('files', metavar='FILE', nargs='+',
+        help='log files to process')
+
+    OPTS = parser.parse_args()
+
+    # argparse debugging
+    if OPTS.debug > 1:
+        for key in dir(OPTS):
+            if not key.startswith('_'):
+                print(f'# {key}={getattr(OPTS, key)}', file=sys.stderr)
+
+    # Interactive debugging
+    if OPTS.debugger:
+        # pylint: disable=C0415
+        import pdb
+        # pylint: enable=C0415
+        # pylint: disable=W1515
+        pdb.set_trace()
+        # pylint: enable=W1515
+
+    ret = 0
+    for fn in OPTS.files:
+        fn2, errmsg = process(fn)
+        if errmsg:
+            print(f'{PROG}: {errmsg}', file=sys.stderr)
+            ret = 1
+            continue
+        if not fn2:
+            print(f'{PROG}: No new name: {fn}', file=sys.stderr)
+            continue
+        if fn == fn2:
+            print(f'{PROG}: No change: {fn}', file=sys.stderr)
+            continue
+        if os.access(fn2, os.F_OK):
+            print(f'{PROG}: {fn}: {os.strerror(errno.EEXIST)}',
+                file=sys.stderr)
+            ret = 1
+            continue
+        if OPTS.verbose or OPTS.dryrun:
+            print(f'+ mv {fn} {fn2}')
+        if not OPTS.dryrun:
+            # Rename
+            try:
+                os.rename(fn, fn2)
+            except (IOError, OSError) as e:
+                print(f'{PROG}: {fn} -> {fn2}: {e.strerror}',
+                    file=sys.stderr)
+                ret = 1
+                continue
+
+    return ret
+
+if __name__ == "__main__":
+    sys.exit(main())
