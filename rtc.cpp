@@ -695,7 +695,7 @@ rtc_update(uint8_t hour, uint8_t min, uint8_t sec)
 		PRINTF(
 		    "rtc_update: ignoring time near midnight: %02u:%02u:%02u\n",
 		    hour, min, sec);
-		return(1);
+		return (1);
 	}
 
 	/* Calculate delta to see if we need to do anything */
