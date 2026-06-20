@@ -11,7 +11,7 @@
 #include "cmd.h"
 #include "eeprom.h"
 #include "serial.h"
-#include "strings.h"
+#include "sstrings.h"
 
 /* Globals */
 struct eeprom eeprom;

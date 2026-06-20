@@ -48,7 +48,7 @@
 #endif
 #include "rtc.h"
 #include "serial.h"
-#include "strings.h"
+#include "sstrings.h"
 #include "util.h"
 
 /* Globals */

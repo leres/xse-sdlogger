@@ -21,8 +21,8 @@ SRCS=		sdlogger.cpp \
 		led.cpp \
 		rtc.cpp \
 		serial.cpp \
+		sstrings.cpp \
 		status.cpp \
-		strings.cpp \
 		util.cpp
 
 HFILES=		NewSerialPort.h \
@@ -32,8 +32,8 @@ HFILES=		NewSerialPort.h \
 		rtc.h \
 		sdlogger.h \
 		serial.h \
+		sstrings.h \
 		status.h \
-		strings.h \
 		util.h \
 		version.h
 

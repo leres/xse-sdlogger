@@ -21,8 +21,8 @@
 #include "rtc.h"
 #include "sdlogger.h"
 #include "serial.h"
+#include "sstrings.h"
 #include "status.h"
-#include "strings.h"
 #include "util.h"
 
 NewSerialPort<0, UART0_SIZE, 0> NewSerial;

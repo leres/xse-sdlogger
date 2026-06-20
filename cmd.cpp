@@ -15,8 +15,8 @@
 #include "eeprom.h"
 #include "rtc.h"
 #include "serial.h"
+#include "sstrings.h"
 #include "status.h"
-#include "strings.h"
 #include "util.h"
 #include "version.h"
 
