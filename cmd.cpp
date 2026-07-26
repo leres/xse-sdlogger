@@ -55,7 +55,6 @@ cmd_cmd(char *s)
 		if (!tfile.open(&curdir, s, O_READ)) {
 			PRINTF("Can't open %s\n", s);
 			goto done;
-
 		}
 		if (tfile.isDir() || tfile.isSubDir()) {
 			SERIAL_PUTSTR("Can't cat directory\n");
@@ -158,7 +157,7 @@ cmd_cmd(char *s)
 		/* debug level */
 		if (*p != '\0') {
 			uv = strtoul(p, &ep, 10);
-			if (*ep != '\0' || uv >= 255) {
+			if (*ep != '\0' || uv >= 0xff) {
 				serial_putstr(FV(msg_badvalue));
 				break;
 			}
@@ -201,9 +200,9 @@ cmd_cmd(char *s)
 		/* Show things */
 		PRINTF("logseq: %d\n", eeprom.logseq);
 		SERIAL_PUTSTR("status:");
-		if ((status &  STATUS_STATE_ERROR) != 0)
+		if ((status & STATUS_STATE_ERROR) != 0)
 			SERIAL_PUTSTR(" ERROR");
-		if ((status &  STATUS_STATE_DIRTY) != 0)
+		if ((status & STATUS_STATE_DIRTY) != 0)
 			SERIAL_PUTSTR(" DIRTY");
 		serial_nl();
 		showdisk();

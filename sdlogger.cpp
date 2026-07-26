@@ -98,13 +98,13 @@ setup(void)
 	serial_nl();
 	hello();
 
-        /* Decode MCU status register */
-        if (boot_mcusr != 0) {
-                SERIAL_PUTSTR("reset:");
+	/* Decode MCU status register */
+	if (boot_mcusr != 0) {
+		SERIAL_PUTSTR("reset:");
 		prmcusr(buf, sizeof(buf));
 		serial_putstr(buf);
 		serial_nl();
-        }
+	}
 
 	/* Initialize leds */
 	led_init();
@@ -179,7 +179,6 @@ loop(void)
 	serial_poll();
 	cmd_poll();
 }
-
 
 // Log to a new file everytime the system boots
 // Checks the spots in EEPROM for the next available LOG# file name
@@ -390,7 +389,7 @@ datelog(void)
 	struct rtc_time *rt;
 	char fn[sizeof("12345678.TXT")];
 
-	rt =  &rtc_time;
+	rt = &rtc_time;
 	cp = fn;
 	size = sizeof(fn);
 

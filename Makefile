@@ -54,11 +54,10 @@ version.h:
 
 # Always update version.h when necessary
 .BEGIN:
-.if ${.CURDIR} != ${.OBJDIR}
-.if exists(${.CURDIR}/version.h) && exists(${.OBJDIR}/version.h)
+.if ${.CURDIR} != ${.OBJDIR} && \
+    exists(${.CURDIR}/version.h) && exists(${.OBJDIR}/version.h)
 	@echo "ERROR: Both version.h and obj/version.h exist" 1>&2
 	@false
-.endif
 .endif
 .if empty(.TARGETS:Mclean) && empty(.TARGETS:Mcleandepend) && \
     empty(.TARGETS:Mdepend) && empty(.TARGETS:Mobj) && \

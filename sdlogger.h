@@ -13,8 +13,7 @@
 #define ISSET(v, bm) (((v) & (bm)) == (bm))
 
 /* Subtract t2 from t1; handles overflow correctly */
-#define MICROS_SUB(t1, t2) \
-    (((t1) >= (t2)) ? (t1) - (t2) : (t1) + (UINT32_MAX - (t2)))
+#define MICROS_SUB(t1, t2) ((u_long)((t1) - (t2)))
 #define MILLIS_SUB(t1, t2) MICROS_SUB((t1), (t2))
 
 /* Default when eeprom.speed is bogus */

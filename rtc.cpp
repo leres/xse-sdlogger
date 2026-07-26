@@ -1,7 +1,7 @@
 /*
- * @(#) $Id: rtc.cpp 160 2025-03-24 23:32:11Z leres $ (XSE)
+ * @(#) $Id: rtc.cpp 1593 2026-07-25 02:28:24Z leres $ (XSE)
  *
- * Copyright (c) 2012, 2015, 2017, 2021, 2022, 2024
+ * Copyright (c) 2012, 2015, 2017, 2021, 2022, 2024, 2025, 2026
  *	Craig Leres
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,6 @@
 /*
  * Maxim DS3231 I2C real-time clock
  */
-
-#if __has_include("local.h")
-#include "local.h"
-#endif
 
 #include <ctype.h>
 
@@ -94,9 +90,10 @@ rtc_cmd(char *s)
 {
 	u_long uv;
 	long v;
-	int8_t i, units, hundreths;
+	int8_t i;
+	int16_t units, hundreths;
 	uint16_t usv1;
-	char *ep;
+	char *p, *ep;
 	char ch;
 	uint8_t uch;
 	int8_t v1, v2, v3;
@@ -104,11 +101,17 @@ rtc_cmd(char *s)
 	u_char buf[19];
 	struct rtc_temp temp;
 
+	p = s;
+	if (*p != '\0')
+		++p;
+	while (*p == ' ')
+		++p;
+
 	switch (*s) {
 
 	case '\0':
 		/* Print the TOD */
-		if (!rtc_pr(1)) {
+		if (!rtc_pr()) {
 			serial_putstr(FV(msg_no_rtc));
 			break;
 		}
@@ -179,7 +182,7 @@ rtc_cmd(char *s)
 		}
 
 		/* Print the TOD */
-		if (!rtc_pr(1))
+		if (!rtc_pr())
 			serial_putstr(FV(msg_no_rtc));
 		else
 			serial_nl();
@@ -188,8 +191,8 @@ rtc_cmd(char *s)
 	case '-':
 	case '+':
 		/* Parse and apply offset */
-		ch = *s++;
-		uv = strtoul(s, &ep, 10);
+		ch = *s;
+		uv = strtoul(p, &ep, 10);
 		if (*ep != '\0') {
 			serial_putstr(FV(msg_badvalue));
 			break;
@@ -224,36 +227,36 @@ rtc_cmd(char *s)
 		v3 += RTC2SEC(rt);
 
 		/* Adjust seconds */
-		while (v3 > 60) {
-			v3 -= 60;
-			++v2;
-		}
-		while (v3 < -60) {
+		while (v3 < 0) {
 			v3 += 60;
 			--v2;
 		}
+		while (v3 >= 60) {
+			v3 -= 60;
+			++v2;
+		}
 
 		/* Adjust minutes */
-		while (v2 > 60) {
-			v2 -= 60;
-			++v1;
-		}
-		while (v2 < -60) {
+		while (v2 < 0) {
 			v2 += 60;
 			--v1;
+		}
+		while (v2 >= 60) {
+			v2 -= 60;
+			++v1;
 		}
 
 		/* Keep track of delta days */
 		i = 0;
 
 		/* Adjust hours */
-		while (v1 > 24) {
-			v1 -= 24;
-			++i;
-		}
-		while (v1 < -24) {
+		while (v1 < 0) {
 			v1 += 24;
 			--i;
+		}
+		while (v1 >= 24) {
+			v1 -= 24;
+			++i;
 		}
 
 		if (!rtc_set(v1, v2, v3)) {
@@ -266,7 +269,7 @@ rtc_cmd(char *s)
 			PRINTF("WARNING: %d day lost\n", i);
 
 		/* Print the TOD */
-		if (!rtc_pr(1))
+		if (!rtc_pr())
 			serial_putstr(FV(msg_no_rtc));
 		else
 			serial_nl();
@@ -288,11 +291,8 @@ rtc_cmd(char *s)
 
 #ifdef HAVE_EEPROM_RTC
 	case 'I':
-		++s;
-		while (*s == ' ')
-			++s;
-		if (*s != '\0') {
-			if (!parseuint8(s, &eeprom.rtc_setoffset, 1))
+		if (*p != '\0') {
+			if (!parseuint8(p, &eeprom.rtc_setoffset, 1))
 				break;
 			if (eeprom_write(1) == 0)
 				SERIAL_PUTSTR("no change\n");
@@ -304,11 +304,8 @@ rtc_cmd(char *s)
 
 	case 'O':
 		/* Optionally parse and apply aging offset then report */
-		++s;
-		while (*s == ' ')
-			++s;
-		if (isdigit(*s) || *s == '+' || *s == '-') {
-			v = strtol(s, &ep, 10);
+		if (isdigit(*p) || *p == '+' || *p == '-') {
+			v = strtol(p, &ep, 10);
 			if (*ep != '\0') {
 				serial_putstr(FV(msg_badvalue));
 				break;
@@ -377,7 +374,8 @@ rtc_cmd(char *s)
 			serial_putstr(FV(msg_no_rtc));
 			break;
 		}
-		SERIAL_PRONE(!ISSET(uch, RTC_C_INTCN), "enabled", "disabled");
+		serial_prone(!ISSET(uch, RTC_C_INTCN),
+		    FV(msg_enabled), FV(msg_disabled));
 		SERIAL_PUTSTR(" 8.192kHz square-wave\n");
 		break;
 
@@ -388,23 +386,30 @@ rtc_cmd(char *s)
 			return;
 		}
 		PRINTF("0x%02X 0x%02X\n", temp.buf[0], temp.buf[1]);
+		if (temp.negative)
+			serial_putchar('-');
 		PRINTF("%d.%02d C\n", temp.units, temp.hundreths);
 
 		/* Convert to Fahrenheit avoiding floating point */
 		v = temp.units;
 		v *= 100;
 		v += temp.hundreths;
-		v = ((v * 9) / 5) + (32 * 100);
-		units = v / 100;
-		if (v < 0)
+		if (temp.negative)
 			v = -v;
+		v = ((v * 9) / 5) + (32 * 100);
+		if (v < 0) {
+			v = -v;
+			serial_putchar('-');
+		}
+		units = v / 100;
 		hundreths = v % 100;
 		PRINTF("%d.%02d F\n", units, hundreths);
 		break;
 
-	default:
+	case '?':
+	case 'h':
 		/* help */
-		SERIAL_PUTSTR(
+		SERIAL_PUTSTR64K(
 		    "'t'\t\tdisplay the time\n"
 		    "'t H:M:S'\tset the time\n"
 		    "'t Y-M-D'\tset the date\n"
@@ -417,7 +422,12 @@ rtc_cmd(char *s)
 		    "'tO%d'\t\taging offset\n"
 		    "'tS%d'\t\ttoggle 8.192kHz square wave\n"
 		    "'tT'\t\tdisplay the temperature\n"
+		    "'th'\t\thelp\n"
 		    );
+		break;
+
+	default:
+		serial_putstr(FV(msg_errmsg));
 		break;
 	}
 }
@@ -542,24 +552,37 @@ rtc_init(int8_t addr)
 }
 
 boolean
-rtc_pr(boolean query)
+rtc_pr(void)
 {
 	struct rtc_time *rt;
-
 	rt = &rtc_time;
-	if (query) {
-		memset(rt, 0, sizeof(*rt));
-		if (!rtc_query())
-			return (0);
-	}
-	PRINTF("%04d-%02d-%02d %02d:%02d:%02d ",
+
+	if (!rtc_query())
+		return (0);
+	PRINTF("%04d-%02d-%02d ",
 	    RTC2YEAR(rt),
 	    RTC2MONTH(rt),
-	    RTC2DAY(rt),
+	    RTC2DAY(rt));
+	PRINTF("%02d:%02d:%02d ",
 	    RTC2HOUR(rt),
 	    RTC2MIN(rt),
 	    RTC2SEC(rt));
 	return (1);
+}
+
+void
+rtc_prt(void)
+{
+	struct rtc_time *rt;
+	rt = &rtc_time;
+
+	if (rtc_query())
+		PRINTF("%02d:%02d:%02d ",
+		    RTC2HOUR(rt),
+		    RTC2MIN(rt),
+		    RTC2SEC(rt));
+	else
+		prts();
 }
 
 /* Return 1 if we were able to get the time */
@@ -568,10 +591,12 @@ rtc_query(void)
 {
 	struct rtc_time *rt, *rt2, rtc_time2;
 
-	/* Read the time */
+	/* Read time */
 	rt2 = &rtc_time2;
-	if (!rtc_read(RTC_SECS, (uint8_t *)rt2, sizeof(*rt2)))
+	if (!rtc_read(RTC_SECS, (uint8_t *)rt2, sizeof(*rt2))) {
+		memset(rt2, 0, sizeof(*rt2));
 		return (0);
+	}
 	rt = &rtc_time;
 	do {
 		/* Keep the last ones read */
@@ -590,6 +615,8 @@ rtc_query(void)
 boolean
 rtc_querytemp(struct rtc_temp *rtp)
 {
+	uint16_t t;
+
 	/* Force a temperature conversion */
 	if (!rtc_convert())
 		return (0);
@@ -608,14 +635,17 @@ rtc_querytemp(struct rtc_temp *rtp)
 	if (!rtc_read(RTC_TEMPMSB, rtp->buf, sizeof(rtp->buf)))
 		return (0);
 
-	rtp->units = (rtp->buf[0] & RTC_TEMP_MASK);
+	/* Temperature is a 10 bit two's complement value in 0.25 C units */
+	t = (((uint16_t)rtp->buf[0]) << 2) | (rtp->buf[1] >> 6);
 	if ((rtp->buf[0] & RTC_TEMP_SIGN) != 0)
-		rtp->units = -rtp->units;
-	rtp->hundreths = (rtp->buf[1] >> 6) * 25;
+		t = TWOSCOMPLEMENT(t) & RTC_TEMP_MASK;
+	rtp->units = t >> 2;
+	rtp->hundreths = (t & 0x3) * 25;
+	rtp->negative = ((rtp->buf[0] & RTC_TEMP_SIGN) != 0);
 	return (1);
 }
 
-/* Read multiple registers (takes about 565us) */
+/* Read multiple registers with retry */
 static boolean
 rtc_read(uint8_t reg, uint8_t *up, int8_t size)
 {
@@ -645,7 +675,6 @@ rtc_read2(uint8_t reg, uint8_t *up, int8_t size)
 		*up++ = Wire.read();
 	return (1);
 }
-
 
 /* Set the time */
 boolean
@@ -711,9 +740,7 @@ rtc_update(uint8_t hour, uint8_t min, uint8_t sec)
 			return (0);
 		SERIAL_PUTSTR("RTC updated: ");
 		PRINTF("(delta %ld) ", delta);
-		(void)rtc_pr(0);
-		SERIAL_PUTSTR("-> ");
-		(void)rtc_pr(1);
+		(void)rtc_pr();
 		serial_nl();
 	}
 	return (1);

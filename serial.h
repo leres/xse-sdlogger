@@ -17,6 +17,7 @@
 #define PRINTF(format, ...) printf_P(PSTR(format), ## __VA_ARGS__)
 #define SERIAL_PRONE(first, s1, s2) serial_prone(first, F(s1), F(s2))
 #define SERIAL_PUTSTR(s) serial_putstr(F(s))
+#define SERIAL_PUTSTR64K(s) SERIAL_PUTSTR(s)
 
 extern void serial_flush(void);
 extern boolean serial_getln(char *, size_t);

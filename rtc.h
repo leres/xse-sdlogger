@@ -1,4 +1,4 @@
-/* @(#) $Id: rtc.h 154 2024-10-09 01:31:59Z leres $ (XSE) */
+/* @(#) $Id: rtc.h 1593 2026-07-25 02:28:24Z leres $ (XSE) */
 #ifndef _rtc_h
 #define _rtc_h
 
@@ -26,7 +26,7 @@
 /* Masks and bits */
 #define RTC_MONTH_MASK	0x1F
 #define RTC_CENTURY_BIT	0x80
-#define RTC_TEMP_MASK	0x7F
+#define RTC_TEMP_MASK	0x3FF		/* 10 bits */
 #define RTC_TEMP_SIGN	0x80
 
 /* RTC_CONTROL bits */
@@ -71,6 +71,8 @@
 #define RTC2MIN(p) BCD2DEC((p)->min)
 #define RTC2SEC(p) BCD2DEC((p)->sec)
 
+#define RTC_AVAIL(p) ((p)->year > 0 && (p)->year < 0xff)
+
 struct rtc_time {
 	uint8_t		sec;		/* seconds */
 	uint8_t		min;		/* minutes */
@@ -85,8 +87,9 @@ extern struct rtc_time rtc_time;
 
 /* Celsius */
 struct rtc_temp {
-	uint8_t units;
+	int8_t units;
 	uint8_t hundreths;
+	boolean negative;
 	u_char buf[2];
 };
 
@@ -98,7 +101,8 @@ extern void rtc_cmd(char *);
 extern void rtc_datetime(uint16_t *, uint16_t *);
 #endif
 extern void rtc_init(int8_t);
-extern boolean rtc_pr(boolean);
+extern boolean rtc_pr(void);
+extern void rtc_prt(void);
 extern boolean rtc_query(void);
 extern boolean rtc_querytemp(struct rtc_temp *);
 extern boolean rtc_set(uint8_t, uint8_t, uint8_t);

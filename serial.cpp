@@ -164,7 +164,7 @@ serial_getln(char *buf, size_t size)
 			/* Shift buffer */
 			ip2 = igp - i;
 			if (ip2 < ibuf)
-				ip2 -= IBUFSIZE;
+				ip2 += IBUFSIZE;
 			igp2 = igp;
 			for (j = i - 1; j > 0; --j) {
 				ip2 = IBUF_PREVP(ip2);
