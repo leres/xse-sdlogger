@@ -1,7 +1,7 @@
 /*
- * @(#) $Id: serial.cpp 156 2024-10-19 23:26:34Z leres $ (XSE)
+ * @(#) $Id: serial.cpp 177 2026-08-03 00:05:01Z leres $ (XSE)
  *
- * Copyright (c) 2008, 2009, 2011, 2012, 2013, 2014, 2015, 2017, 2020, 2021, 2022, 2024
+ * Copyright (c) 2008, 2009, 2011, 2012, 2013, 2014, 2015, 2017, 2020, 2021, 2022, 2024, 2026
  *	Craig Leres
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,6 @@
 #include <ctype.h>
 
 #include <wiring_private.h>
-
-#include <ctype.h>
 
 #include "serial.h"
 

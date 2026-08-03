@@ -1,4 +1,4 @@
-/* @(#) $Id: eeprom.cpp 156 2024-10-19 23:26:34Z leres $ (XSE) */
+/* @(#) $Id: eeprom.cpp 175 2026-08-02 22:59:36Z leres $ (XSE) */
 
 #if __has_include("local.h")
 #include "local.h"
@@ -20,8 +20,13 @@ void
 eeprom_cmd(char *s)
 {
 	u_long uv;
-	char *ep;
+	char *p, *ep;
 
+	p = s;
+	if (*p != '\0')
+		++p;
+	while (isspace(*p))
+		++p;
 	switch (*s) {
 
 	case 'r':
@@ -30,10 +35,7 @@ eeprom_cmd(char *s)
 		break;
 
 	case 's':
-		++s;
-		while (*s == ' ')
-			++s;
-		uv = strtoul(s, &ep, 10);
+		uv = strtoul(p, &ep, 10);
 		if (*ep != '\0' || !serial_speed(uv)) {
 			serial_putstr(FV(msg_badvalue));
 			SERIAL_PUTSTR("valid speeds:\n");

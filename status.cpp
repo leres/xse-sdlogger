@@ -1,4 +1,4 @@
-/* @(#) $Id: status.cpp 148 2024-04-28 17:09:24Z leres $ (XSE) */
+/* @(#) $Id: status.cpp 176 2026-08-02 23:56:51Z leres $ (XSE) */
 
 #if __has_include("local.h")
 #include "local.h"
@@ -8,33 +8,32 @@
 
 #include "sdlogger.h"
 
+#include "serial.h"
 #include "status.h"
 
 /* Globals */
 uint8_t status;
-
-/* Locals */
-static uint8_t reg;
+extern int8_t mywireaddr;
 
 /* Forwards */
-static void status_onreceive(int);
 static void status_onrequest(void);
 
 void
 status_init(void)
 {
-	status |= STATUS_STATE_ERROR;
-	Wire.begin(TWI_SDLOGGER);
-	Wire.onReceive(status_onreceive);
-	Wire.onRequest(status_onrequest);
-}
+	int8_t addr;
 
-static void
-status_onreceive(int n)
-{
-	/* Update register number */
-	while (n-- > 0)
-		reg = Wire.read();
+	addr = TWI_SDLOGGER;
+	status |= STATUS_STATE_ERROR;
+	if (mywireaddr == 0) {
+		Wire.begin(addr);
+		mywireaddr = addr;
+	} else if (mywireaddr != addr) {
+		PRINTF("status_init: invalid addr, aborting (%d != %d)\n",
+		    mywireaddr, addr);
+		return;
+	}
+	Wire.onRequest(status_onrequest);
 }
 
 static void

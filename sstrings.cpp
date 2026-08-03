@@ -1,4 +1,4 @@
-/* @(#) $Id: strings.cpp 156 2024-10-19 23:26:34Z leres $ (XSE) */
+/* @(#) $Id: sstrings.cpp 173 2026-07-26 21:12:23Z leres $ (XSE) */
 
 #include "sstrings.h"
 

@@ -1,4 +1,4 @@
-/* @(#) $Id: sdlogger.h 156 2024-10-19 23:26:34Z leres $ (XSE) */
+/* @(#) $Id: sdlogger.h 172 2026-07-26 20:55:59Z leres $ (XSE) */
 
 #ifndef _sdlogger_h_
 #define _sdlogger_h_
@@ -74,7 +74,6 @@
 
 #define PRESS_MS	33		/* debounce duration */
 
-/* XXX */
 typedef unsigned long u_long;
 typedef unsigned char u_char;
 

@@ -1,4 +1,4 @@
-/* @(#) $Id: serial.h 156 2024-10-19 23:26:34Z leres $ (XSE) */
+/* @(#) $Id: serial.h 173 2026-07-26 21:12:23Z leres $ (XSE) */
 
 #ifndef _serial_h_
 #define _serial_h_

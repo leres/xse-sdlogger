@@ -1,5 +1,5 @@
 /*
- * @(#) $Id: rtc.cpp 1593 2026-07-25 02:28:24Z leres $ (XSE)
+ * @(#) $Id: rtc.cpp 176 2026-08-02 23:56:51Z leres $ (XSE)
  *
  * Copyright (c) 2012, 2015, 2017, 2021, 2022, 2024, 2025, 2026
  *	Craig Leres
@@ -51,6 +51,7 @@
 struct rtc_time rtc_time = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
+extern int8_t mywireaddr;
 
 /* Forwards */
 static boolean rtc_convert(void);
@@ -541,7 +542,14 @@ rtc_init(int8_t addr)
 {
 	uint8_t uch;
 
-	Wire.begin(addr);
+	if (mywireaddr == 0) {
+		Wire.begin(addr);
+		mywireaddr = addr;
+	} else if (mywireaddr != addr) {
+		PRINTF("rtc_init: invalid addr, aborting (%d != %d)\n",
+		    mywireaddr, addr);
+		return;
+	}
 
 	/* Disable interrupts */
 	uch = RTC_C_INTCN;

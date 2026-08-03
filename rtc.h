@@ -1,4 +1,4 @@
-/* @(#) $Id: rtc.h 1593 2026-07-25 02:28:24Z leres $ (XSE) */
+/* @(#) $Id: rtc.h 173 2026-07-26 21:12:23Z leres $ (XSE) */
 #ifndef _rtc_h
 #define _rtc_h
 

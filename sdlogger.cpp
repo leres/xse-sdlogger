@@ -1,4 +1,4 @@
-/* @(#) $Id: sdlogger.cpp 160 2025-03-24 23:32:11Z leres $ (XSE) */
+/* @(#) $Id: sdlogger.cpp 176 2026-08-02 23:56:51Z leres $ (XSE) */
 
 #if __has_include("local.h")
 #include "local.h"
@@ -19,7 +19,6 @@
 #include "eeprom.h"
 #include "led.h"
 #include "rtc.h"
-#include "sdlogger.h"
 #include "serial.h"
 #include "sstrings.h"
 #include "status.h"
@@ -40,6 +39,7 @@ Sd2Card card;
 SdFile file;
 u_long msec;
 u_long card_present_lastms;
+int8_t mywireaddr;
 
 /* Forwards */
 void append_file(char *);
@@ -304,7 +304,7 @@ append_file(char *file_name)
 			status_set((cc != n), STATUS_STATE_ERROR);
 			/* Hard stop if there were errors */
 			if (cc != n)
-				blink_error(ERROR_SD_WRITE);
+				break;
 
 			/* We have characters so reset the idleTime */
 			idleTime = 0;
@@ -316,7 +316,7 @@ append_file(char *file_name)
 				status_set(!ok, STATUS_STATE_ERROR);
 				/* Hard stop if there were errors */
 				if (!ok)
-					blink_error(ERROR_SD_WRITE);
+					break;
 				led_red(0);
 			}
 			continue;
@@ -326,7 +326,7 @@ append_file(char *file_name)
 			status_set(!ok, STATUS_STATE_ERROR);
 			/* Hard stop if there were errors */
 			if (!ok)
-				blink_error(ERROR_SD_WRITE);
+				break;
 			led_red(0);
 
 #ifdef notdef

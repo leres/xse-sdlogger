@@ -1,4 +1,4 @@
-/* @(#) $Id: cmd.cpp 156 2024-10-19 23:26:34Z leres $ (XSE) */
+/* @(#) $Id: cmd.cpp 177 2026-08-03 00:05:01Z leres $ (XSE) */
 
 #if __has_include("local.h")
 #include "local.h"
@@ -330,6 +330,7 @@ printFatTime(uint16_t fatTime)
 static void
 ls(SdFile dp, uint8_t flags, uint8_t indent)
 {
+	int8_t i;
 	dir_t d, *p;
 
 	p = &d;
@@ -351,7 +352,11 @@ ls(SdFile dp, uint8_t flags, uint8_t indent)
 		if (!DIR_IS_FILE_OR_SUBDIR(p))
 			continue;
 
-		/* Pirnt the name */
+		/* Indent */
+		for (i = indent; i > 0; --i)
+			serial_putchar(' ');
+
+		/* Print the name */
 		printDirName(*p, (flags & (LS_DATE | LS_SIZE)) ? 14 : 0);
 
 		/* Print date/time */
